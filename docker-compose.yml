@@ -8,4 +8,4 @@ services:
     ports:
       - "3001:3001"
     env_file:
-      - .env
+      - /app/data/secrets/plex-mcp-server/dev.env
