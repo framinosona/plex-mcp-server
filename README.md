@@ -5,7 +5,7 @@ A powerful Model-Context-Protocol (MCP) server for interacting with Plex Media S
 ## Features
 
 - **Standardized API**: Unified JSON responses for all Plex operations.
-- **Multiple Transports**: Supports both `stdio` and `SSE` (Server-Sent Events).
+- **Multiple Transports**: Supports `stdio`, `SSE` (Server-Sent Events), and `Streamable HTTP`.
 - **Comprehensive Control**: Manage libraries, media, collections, playlists, clients, and users.
 - **Remote Ready**: Built-in OAuth 2.1 support for integration with remote AI platforms like Claude.ai.
 - **Admin Tools**: Access logs, monitor bandwidth, and run Butler tasks.
@@ -82,7 +82,7 @@ Example for Claude Desktop (`%APPDATA%/Claude/claude_desktop_config.json`):
 
 Go to https://claude.ai/settings/connectors and add a new connector with the following settings:
 - Name: Plex MCP
-- URL: https://plexmcp.example.com/sse
+- URL: `https://plexmcp.example.com/sse` (SSE transport) or `https://plexmcp.example.com/mcp` (Streamable HTTP transport) — must match whatever `--transport` the server is running
 - Add OAuth Client ID and Client Secret if OAuth is enabled
 
 <img width="516" height="515" alt="image" src="https://github.com/user-attachments/assets/7949a127-51a7-4c60-a121-511ee4a1f00d" />
@@ -195,7 +195,15 @@ Control playback and navigation on Plex clients.
 
 ## Remote Access & OAuth
 
-The Plex MCP Server can be integrated with remote platforms like **Claude.ai** via SSE and optional OAuth 2.1. This allows you to talk to your MCP server directly from the Claude interface from anywhere.
+The Plex MCP Server can be integrated with remote platforms like **Claude.ai** via SSE or Streamable HTTP, with optional OAuth 2.1. This allows you to talk to your MCP server directly from the Claude interface from anywhere.
+
+### SSE vs. Streamable HTTP
+Both are network transports (as opposed to `stdio`, for local/subprocess use) and expose the same
+tools. Streamable HTTP is the MCP spec's current preferred transport and is a single endpoint
+(`/mcp`) with no in-band session URL, so it's the better choice if you're reverse-proxying this
+server behind a shared path prefix alongside other services (SSE's `/messages/` endpoint is
+root-relative and doesn't survive a shared prefix). Pick it with `--transport streamable-http`;
+the endpoint is then available at `/mcp` instead of SSE's `/sse` + `/messages/` pair.
 
 ### Enabling OAuth
 1. Set `MCP_OAUTH_ENABLED=true` in your environment.
